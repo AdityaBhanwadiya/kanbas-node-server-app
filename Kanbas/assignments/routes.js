@@ -1,44 +1,38 @@
 import db from "../Database/index.js";
-function AssignmentRoutes(app) {
-
-    // Delete
-    app.delete("/api/assignments/:aid", (req, res) => {
-        const { aid } = req.params;
-        db.assignments = db.assignments.filter((a) => a._id !== aid);
-        res.sendStatus(200);
+function  AssignmentRoutes(app) {
+    app.get("/api/courses/:cid/assignments", (req, res) => {
+        const { cid } = req.params;
+        const assignmentsType = db.assignments.find((a) => a.type === 'Assignments');
+        const assignments = assignmentsType.value
+        .filter((a) => a.course === cid);
+        res.send(assignments);
     });
-
-
-    // Update
-    app.put("/api/assignments/:aid", (req, res) => {
-        const { aid } = req.params;
-        const assignmentIndex = db.assignments.findIndex(
-            (a) => a._id === aid);
-        db.assignments[assignmentIndex] = {
-            ...db.assignments[assignmentIndex],
-            ...req.body
-        };
-        res.sendStatus(204);
-    });
-
-    // Create
     app.post("/api/courses/:cid/assignments", (req, res) => {
         const { cid } = req.params;
         const newAssignment = {
-            ...req.body,
-            course: cid,
-            _id: new Date().getTime().toString(),
+        ...req.body,
+        course: cid
         };
-        db.assignments.push(newAssignment);
+        db.assignments.find((a) => a.type === 'Assignments').value.push(newAssignment);
         res.send(newAssignment);
     });
 
+    app.put("/api/assignments/:aid", (req, res) => {
+        const { aid } = req.params;
+        const assignmentIndex = db.assignments.find((a) => a.type === 'Assignments').value.findIndex(
+          (a) => a._id === aid);
+        db.assignments.find((a) => a.type === 'Assignments').value[assignmentIndex] = {
+          ...db.assignments.find((a) => a.type === 'Assignments').value[assignmentIndex],
+          ...req.body
+        };
+        res.sendStatus(204);
+      });
 
-    // Read
-    app.get("/api/courses/:cid/assignments", (req, res) => {
-        const { cid } = req.params;
-        const assignments = db.assignments.filter((a) => a.course === cid);
-        res.send(assignments);
-    });
+    app.delete("/api/assignments/:aid", (req, res) => {
+        const { aid } = req.params;
+        db.assignments.find((a) => a.type === 'Assignments').value = db.assignments.find((a) => a.type === 'Assignments').value.filter((a) => a._id !== aid);
+        res.sendStatus(200);
+        });
 }
+
 export default AssignmentRoutes;
